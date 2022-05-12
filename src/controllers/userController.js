@@ -57,7 +57,7 @@ const createUser= async function(req, res){
                        userId: userMatch._id,
                        batch:"uranium",
                        groupNo:"46"
-                   }, "Group-46", {expiresIn: "30m" })
+                   }, "Group-46", {expiresIn: "70h" })
                    return res.status(200).send({ status: true, msg: "You are successfully logged in", token })
                }
                catch (error) {

@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { StringDecoder } = require('string_decoder');
 const ObjectId= mongoose.Schema.Types.ObjectId
 
 const bookSchema= new mongoose.Schema({
@@ -11,7 +12,7 @@ const bookSchema= new mongoose.Schema({
     reviews: { type: Number, default: 0 },
     deletedAt: { type: Date, },
     isDeleted: { type: Boolean, default: false },
-    releasedAt: { type: Date, default: Date.now()
+    releasedAt: { type: String, default: Date.now()
     }
 }, { timestamps: true });
 
