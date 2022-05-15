@@ -77,15 +77,18 @@ const getBooksById = async function (req, res) {
         if (Object.keys(bookId) == 0){
              return res.status(400).send({ status: false, msg: "BAD REQUEST provide some data in param" }) }
 
-        const books = await booksModel.findOne({ _id: bookId, isDeleted: false });
-        if (!books) return res.status(404).send({ status: false, message: "No book found according to your search" })
+        const books = await booksModel.findOne({ _id: bookId, isDeleted: false }).lean();
+        if (!books)
+         return res.status(404).send({ status: false, message: "No book found according to your search" })
 
-        const reviews = await reviewModel.find({ _id: bookId, isDeleted: false })
-        .select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
-        const bookWithReviews = JSON.parse(JSON.stringify(books));
-        bookWithReviews.reviewsData = reviews
+        const reviews = await reviewModel.find({ bookId: books._id, isDeleted: false })
+        
+        
+
+        
+        books["reviewsData"] = reviews
 console.log(reviews)
-        return res.status(200).send({ status: true, message: 'Books list', totalReviews: reviews.length, data: bookWithReviews });
+        return res.status(200).send({ status: true, message: 'Book detailed', data: books });
     }
     catch (error) {
         res.status(500).send({ status: false, error: error.message })

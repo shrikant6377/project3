@@ -7,42 +7,65 @@ const isValid = function(value){
     if(typeof (value) === 'string' && value.trim().length == 0) return false
     return true
 }
+
 const createReview = async function (req, res) {
     try {
-        
-        let data = req.body;
-        if (Object.keys(data) == 0) {
-             return res.status(400).send({ status: false, message: "Enter data to create a review" }) }
+        let bookId = req.params.bookId
 
-        if (!isValid(data.bookId)) { 
-            return res.status(400).send({ status: false, message: "BookId is required" }) }
-        if (!isValid(data.rating)) {
-             return res.status(400).send({ status: false, message: "Rating is required" }) }
-        if (!(data.rating >= 1 && data.rating <= 5)) {
-             return res.status(400).send({ status: false, message: "Rating value should be between 1 to 5" }) }
+        if (!bookId)
+            return res.status(400).send({ status: false, msg: "Bad Request, please provide BookId in params" })
 
-       
+        let checkbook = await booksModel.findById({ _id: bookId, isDeleted: false })
+        if (!checkbook){
+            return res.status(404).send({ status: false, message: "No book found" })
+        } else {
+            let data = req.body
+            let { review, rating, reviewedBy } = data
 
-        if (!(data.bookId == req.params.bookId)){
-             return res.status(400).send({ status: false, message: "Id inside body and Id inside params should be same" }) }
+            if (!isValid(data)) {
+                return res.status(400).send({ status: false, msg: "please provide  details" })
+            }
 
-        let book = await booksModel.findOne({ _id: data.bookId, isDeleted: false })
-        console.log(book)
-        if (!book) { return res.status(400).send({ status: false, message: "No book exist with this id" }) }
+            if (!isValid(review)) {
+                return res.status(400).send({ status: false, msg: "Not a valid review" })
+            }
 
-        let createData = await reviewModel.create(data);
-        return res.status(201).send({ status: true, message: "Review successfully created", data: createData })
+            if (!isValid(reviewedBy)) {
+                return res.status(400).send({ status: false, msg: "Name should be a valid String " })
+            }
+
+            if (!(rating >= 1 && rating <= 5)) {
+                return res.status(400).send({ status: false, msg: "Rating should be inbetween 1-5 " })
+            }
+
+            data.reviewedAt = new Date()
+            data.bookId = bookId
+            let newReview = await booksModel.findOneAndUpdate({ _id: bookId }, {
+                $inc: {
+                    review: 1
+                }
+            }, { new: true, upsert: true, })
+
+            let savedData = await reviewModel.create(data)
+            newReview._doc["reviewData"] = savedData
+            return res.status(201).send({ status: true, data: newReview })
+        }
     }
-    catch (error) {
-        return res.status(500).send({ status: false, error: error.message })
+    catch (err) {
+        console.log(err)
+        res.status(500).send({ status: false, msg: "error", err: err.message })
+
     }
 }
 const updateReviews = async (req, res) => {
     try {
         const bookId = req.params.bookId;
-        
+        if (!bookId)
+            return res.status(400).send({ status: false, msg: "Bad Request, please provide BookId in params" })
         const reviewId = req.params.reviewId;
        console.log(reviewId)
+       if (!reviewId)
+            return res.status(400).send({ status: false, msg: "Bad Request, please provide reviewId in params" })
         const data = req.body;
         console.log(data)
         if(Object.keys(data)==0){
@@ -52,7 +75,7 @@ const updateReviews = async (req, res) => {
 
         let book = await booksModel.findOne({ _id: bookId, isDeleted: false })
         if (!book) {
-             return res.status(400).send({ status: false, message: "No book exist with this id" }) }
+             return res.status(404).send({ status: false, message: "No book exist with this id" }) }
 
         let checkReviewId = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
         if (!checkReviewId){ 
@@ -77,10 +100,14 @@ const updateReviews = async (req, res) => {
         return res.status(500).send({ status: false, error: error.message })
     }
 }
-const deleteReview = async (req, res) => {
+const deleteReview = async function(req, res) {
     try {
         let reviewId = req.params.reviewId
+        if (!reviewId)
+            return res.status(400).send({ status: false, msg: "Bad Request, please provide reviewId in params" })
         let bookId = req.params.bookId
+        if (!bookId)
+            return res.status(400).send({ status: false, msg: "Bad Request, please provide BookId in params" })
         
         let book = await booksModel.findOne({ _id: bookId, isDeleted: false });
         if (!book) { return res.status(404).send({ status: false, message: "No book exist with this id" }) }
@@ -93,7 +120,7 @@ const deleteReview = async (req, res) => {
 
         let deleteRev = await reviewModel.findOneAndUpdate({ _id: review._id, bookId: review.bookId, isDeleted: false },
             { $set: { isDeleted: true } })
-        let deleteReview = await booksModel.findOneAndUpdate({ _id: book._id }, { $inc: { review: -1 } })
+        let deleteReview = await booksModel.findOneAndUpdate({ _id: book._id },{ $inc: { review: -1 } })
         return res.status(200).send({ status: true, message: "Review deleted successfully"})
     }
     catch (error) {
