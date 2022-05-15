@@ -75,16 +75,16 @@ const getBooksById = async function (req, res) {
     try {
         const bookId = req.params.bookId;
         if (Object.keys(bookId) == 0){
-             return res.status(400).send({ status: false, msg: "BAD REQUEST" }) }
+             return res.status(400).send({ status: false, msg: "BAD REQUEST provide some data in param" }) }
 
         const books = await booksModel.findOne({ _id: bookId, isDeleted: false });
         if (!books) return res.status(404).send({ status: false, message: "No book found according to your search" })
 
-        const reviews = await reviewModel.find({ bookId: bookId, isDeleted: false })
+        const reviews = await reviewModel.find({ _id: bookId, isDeleted: false })
         .select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
         const bookWithReviews = JSON.parse(JSON.stringify(books));
         bookWithReviews.reviewsData = reviews
-
+console.log(reviews)
         return res.status(200).send({ status: true, message: 'Books list', totalReviews: reviews.length, data: bookWithReviews });
     }
     catch (error) {
@@ -114,10 +114,12 @@ const updateBooks = async function (req, res) {
         if (book.isDeleted == true) { 
             return res.status(400).send({ status: false, msg: "book is already deleted." }) }
 
-        const updatedBooks = await booksModel.findOneAndUpdate({ _id: bookId },
-            { $set: { title: data.title, excerpt: data.excerpt, releasedAt: data.releasedAt, ISBN: data.ISBN } },
+        const updatedBooks = await booksModel.findOneAndUpdate({ _id: bookId,isDeleted:false },
+            
+            { $set: { title: data.title, excerpt: data.excerpt,category: data.category,subcategory: data.subcategory, releasedAt: data.releasedAt, ISBN: data.ISBN } },
             { new: true })
-        return res.status(201).send({ status: true, updatedBooks: updatedBooks })
+            
+        return res.status(201).send({ status: true, data: updatedBooks })
     }
     catch (error) {
         res.status(500).send({ status: false, error: error.message })

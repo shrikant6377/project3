@@ -22,24 +22,19 @@ const authentication = async function(req, res, next){
     }
 }
 
-const authorization = async function (req, res, next) {
+let authorization = async function (req, res, next) {
     try {
-        const token = req.headers["x-api-key"];
-        const decodedtoken = jwt.verify(token, "Group-46")
-        const bookId = req.params.bookId;
-        // const userId=req.body.userId
-         const book = await bookModel.findById(bookId)
-        if(!book){
-            return res.status(404).send({ status: false, msg: "There is no data inside the database with this id" }) }
+        let token = req.headers["x-api-key"];
+        let decodedtoken = jwt.verify(token, "Group-46")
+        
+        let bookId = req.params.bookId;
+        
+        let book = await bookModel.findById(bookId)
+   
+        if(!book){return res.status(404).send({ status: false, msg: "There is no data inside the database with this id" }) }
 
-        if (decodedtoken.userId != book.userId) {
-             return res.status(401).send({ status: false, msg: "You are not authorised" })
-     }
-    //  if (decodedtoken.userId != userId.userId){
-    // return res.status(400).send({status:false, msg:"userId not match current users"})
-    //  }
-
-        next();
+        if (decodedtoken.userId != book.userId) { return res.status(401).send({ status: false, msg: "You are not authorised" }) }
+        next()
     }
     catch (error) {
         return res.status(500).send({ msg: error.message })
