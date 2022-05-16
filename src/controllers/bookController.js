@@ -57,7 +57,7 @@ let getBook = async function (req, res) {
         const data = req.query
         
         if (!isValidObjectId(data.userId)) { 
-            return res.status(400).send({ status: false, msg: 'Please provide a valid Book Id' }) }
+            return res.status(400).send({ status: false, msg: 'Please provide a valid user Id' }) }
 
         
         // if (Object.keys(data).length == 0){
@@ -73,8 +73,7 @@ let getBook = async function (req, res) {
         const book = await booksModel.find(filter,{isDeleted:false})
          .select({  title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 })
          .sort({ title: 1 })
-        if (book.length === 0) {
-            
+        if (book.length === 0) { 
             return res.status(404).send({ status: false, message: "No book found according to your search" })
         }
         return res.status(200).send({ status: true, totalBooks: book.length, data: book })
@@ -98,9 +97,7 @@ const getBooksById = async function (req, res) {
          return res.status(404).send({ status: false, message: "No book found according to your search" })
 
         const reviews = await reviewModel.find({ bookId: books._id, isDeleted: false })
-        
-        
-
+    
         
         books["reviewsData"] = reviews
 console.log(reviews)

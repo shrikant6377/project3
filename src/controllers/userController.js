@@ -33,8 +33,8 @@ const createUser= async function(req, res){
         if (!isValid(data.password)) {
              return res.status(400).send({ status: false, msg: "password is required" })
              }
-             if (!(data.password.length >= 8 && data.password.length <= 15)) {
-                return res.status(400).send({ status: false, msg: "password length b/w 8-15" })
+             if (!(data.password.length >= 5 && data.password.length <= 15)) {
+                return res.status(400).send({ status: false, msg: "password length b/w 5-15" })
               }
            
              const duplicateNumber = await userModel.findOne({ phone: data.phone })
@@ -55,10 +55,13 @@ const createUser= async function(req, res){
                try {
                    const data = req.body
            // validations
-                   if (Object.keys(data) == 0) return res.status(400).send({ status: false, msg: "Bad Request, No data provided" })
+                   if (Object.keys(data) == 0)
+                    return res.status(400).send({ status: false, msg: "Bad Request, No data provided" })
                 
-                   if (!isValid(data.email)) { return res.status(400).send({ status: false, msg: "Email is required" }) }
-                   if (!isValid(data.password)) { return res.status(400).send({ status: false, msg: "Password is required" }) };;
+                   if (!isValid(data.email)) {
+                        return res.status(400).send({ status: false, msg: "Email is required" }) }
+                   if (!isValid(data.password)) {
+                        return res.status(400).send({ status: false, msg: "Password is required" }) };;
                    
            
                    const userMatch = await userModel.findOne({ email: data.email, password: data.password })
