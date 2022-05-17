@@ -14,6 +14,6 @@ const bookSchema= new mongoose.Schema({
     isDeleted: { type: Boolean, default: false },
     releasedAt: { type: String,required:true, default: Date.now()
     }
-}, { timestamps: true });
+},{ timestamps: true });
 
 module.exports = mongoose.model('books', bookSchema)

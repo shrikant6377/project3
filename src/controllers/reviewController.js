@@ -29,7 +29,9 @@ const createReview = async function (req, res) {
             return res.status(404).send({ status: false, message: "No book found" })
         } 
             
-    
+    if (!isValid(data.reviewedby)) {
+                return res.status(400).send({ status: false, msg: "Name should be a valid String " })
+            }
             if (!isValid(data)) {
                 return res.status(400).send({ status: false, msg: "please provide  details" })
             }
@@ -40,12 +42,6 @@ const createReview = async function (req, res) {
             let rating = data.rating
             let reviewedAt = new Date()
             let review=data.review
-      
-           
-            
-            // if (!isValid(reviewedby)) {
-            //     return res.status(400).send({ status: false, msg: "Name should be a valid String " })
-            // }
 
             if (!(rating >= 1 && rating <= 5)) {
                 return res.status(400).send({ status: false, msg: "Rating should be inbetween 1-5 " })
@@ -61,7 +57,8 @@ const createReview = async function (req, res) {
             let UpdateCountReview = await booksModel.findByIdAndUpdate({ _id: bookID }, { $inc: { reviews: 1 } })
     
             //SELECT PARTICULAR KEY
-            let ShowReview = await reviewModel.findOne({ _id: UpdateCountReview._id }).select({ _id: 1, bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).populate("bookId")
+            let ShowReview = await reviewModel.findOne({ _id: UpdateCountReview._id })
+            .select({ _id: 1, bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).populate("bookId")
     
             return res.status(201).send({ Status: true, message: 'Success', data: {ReviewCreate,ShowReview} })
           
@@ -146,7 +143,7 @@ const deleteReview = async function(req, res) {
         let deleteRev = await reviewModel.findOneAndUpdate({ _id: review._id, bookId: review.bookId, isDeleted: false },
             { $set: { isDeleted: true } })
         let deleteReview = await booksModel.findOneAndUpdate({ _id: book._id },{ $inc: { review: -1 } })
-        return res.status(200).send({ status: true, message: "Review deleted successfully"})
+        return res.status(200).send({ status: true, message: "Review deleted successfully",data:{deleteRev,deleteReview}})
     }
     catch (error) {
         return res.status(500).send({ status: false, error: error.message })

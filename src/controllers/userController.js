@@ -27,14 +27,15 @@ const createUser= async function(req, res){
              if (!EmailRegex.test(data.email)) {
                 return res.status(400).send({ Status: false, message: " Please enter a valid email" })
             }
-            // if (!Passwordregex.test(data.Password)) {
-            //     return res.status(400).send({ Status: false, message: " Please enter a valid pass" })
-            // }
+            
         if (!isValid(data.password)) {
              return res.status(400).send({ status: false, msg: "password is required" })
              }
-             if (!(data.password.length >= 5 && data.password.length <= 15)) {
-                return res.status(400).send({ status: false, msg: "password length b/w 5-15" })
+             if (!Passwordregex.test(data.Password)) {
+                return res.status(400).send({ Status: false, message: " Please enter a valid pass" })
+            }
+             if (!(data.password.length >= 8 && data.password.length <= 15)) {
+                return res.status(400).send({ status: false, msg: "password length b/w 8-15" })
               }
            
              const duplicateNumber = await userModel.findOne({ phone: data.phone })
